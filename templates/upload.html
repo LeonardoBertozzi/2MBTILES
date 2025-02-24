@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Converter PDF para MBTiles</title>
     <style>
-        /* Resetando margens e padding */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        /* Estilos principais */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f7f8fa;
@@ -22,7 +19,6 @@
             height: 100vh;
             color: #333;
         }
-
         .container {
             background-color: #fff;
             padding: 40px 30px;
@@ -32,38 +28,41 @@
             width: 100%;
             max-width: 450px;
         }
-
         h1 {
             color: #333;
             font-size: 2em;
             font-weight: 600;
             margin-bottom: 20px;
         }
-
-        /* Estilo do formulário */
         form {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-
-        input[type="file"] {
+        .file-box {
             padding: 15px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 1em;
             outline: none;
             background-color: #f1f3f5;
-            transition: border-color 0.3s ease;
+            text-align: center;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
         }
-
-        input[type="file"]:hover {
-            border-color: #007bff;
+        .file-box.attached {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
         }
-
+        .file-message {
+            margin-top: 10px;
+            font-size: 1em;
+            color: #28a745;
+            font-weight: 600;
+        }
         button {
             padding: 15px;
-  font-size: 1.1em;
+            font-size: 1.1em;
             color: white;
             background-color: #007bff;
             border: none;
@@ -71,60 +70,68 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
         button:hover {
             background-color: #0056b3;
         }
-
-        /* Mensagens de sucesso */
         .message {
             margin-top: 20px;
             font-size: 1.1em;
-            color: #28a745;
             font-weight: 600;
             transition: opacity 0.3s ease;
         }
-
+        .processing {
+            color: #ffc107;
+        }
+        .processed {
+            color: #28a745;
+        }
         a {
             color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
-
         a:hover {
             text-decoration: underline;
         }
-
-        /* Responsividade */
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-                width: 90%;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            input[type="file"], button {
-                padding: 12px;
-            }
-        }
     </style>
+    <script>
+        function fileAttached(event) {
+            let fileBox = document.getElementById('file-box');
+            let fileMessage = document.getElementById('file-message');
+            let fileName = event.target.files[0].name;
+            fileBox.classList.add('attached');
+            fileBox.innerText = fileName;
+            fileMessage.innerText = "Arquivo Anexado";
+        }
+        function showProcessing() {
+            let messageBox = document.getElementById('message-box');
+            let fileBox = document.getElementById('file-box');
+            let fileMessage = document.getElementById('file-message');
+            let fileInput = document.getElementById('file-input');
+            messageBox.innerText = "Processando...";
+            messageBox.classList.add('processing');
+            setTimeout(() => {
+                messageBox.innerText = "Processado";
+                messageBox.classList.remove('processing');
+                messageBox.classList.add('processed');
+                fileBox.classList.remove('attached');
+                fileBox.innerText = "Selecione um arquivo";
+                fileMessage.innerText = "";
+                fileInput.value = "";
+            }, 3000); // Simulação de tempo de processamento
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Converter PDF para MBTiles</h1>
-        <form action="/" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
+        <form action="/" method="post" enctype="multipart/form-data" onsubmit="showProcessing()">
+            <label id="file-box" class="file-box" for="file-input">Selecione um arquivo</label>
+            <input id="file-input" type="file" name="file" required style="display: none;" onchange="fileAttached(event)">
+            <div id="file-message" class="file-message"></div>
             <button type="submit">Enviar</button>
         </form>
-
-        {% if filename %}
-            <div class="message">
-                Seu arquivo foi convertido com sucesso! <a href="{{ url_for('download_file', filename=filename) }}">Clique aqui para baixar</a>.
-            </div>
-        {% endif %}
+        <div id="message-box" class="message"></div>
     </div>
 </body>
 </html>
