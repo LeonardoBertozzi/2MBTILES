@@ -17,7 +17,7 @@ def pdf_to_mbtiles(input_pdf, output_mbtiles):
     # Converter PDF para TIFF com alta resolução e suavização
     cmd_tif = [
         'gdal_translate', '-of', 'GTiff', '-outsize', '2560', '1600',
-        '-co', 'TILED=YES', '-co', 'COMPRESS=LZW', '-co', 'PREDICTOR=2',
+        '-co', 'COMPRESS=LZW', '-co', 'PREDICTOR=2',
         input_pdf, output_tif
     ]
     subprocess.run(cmd_tif, check=True)
@@ -31,13 +31,12 @@ def pdf_to_mbtiles(input_pdf, output_mbtiles):
         'gdal_translate', 
         '-of', 'MBTILES',
         '-co', 'QUALITY=95',
-        '-co', 'TILED=YES',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
     
-    # Adicionar níveis de zoom
-    cmd_zoom = ['gdaladdo', '-r', 'nearest', output_mbtiles, '2', '4', '8', '16', '32']
+    # Adicionar níveis de zoom para melhor visualização
+    cmd_zoom = ['gdaladdo', '-r', 'lanczos', output_mbtiles, '2', '4', '8', '16', '32']
     subprocess.run(cmd_zoom, check=True)
     
     os.remove(output_tif)
