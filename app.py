@@ -23,7 +23,7 @@ def pdf_to_mbtiles(input_pdf, output_mbtiles):
     subprocess.run(cmd_tif, check=True)
     
     # Adicionar sistema de referência espacial (SRS) se não estiver presente
-    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', '-r', 'cubic', output_tif, output_tif]
+    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', '-r', 'lanczos', output_tif, output_tif]
     subprocess.run(cmd_srs, check=True)
     
     # Converter para MBTILES com qualidade ajustada
@@ -31,12 +31,13 @@ def pdf_to_mbtiles(input_pdf, output_mbtiles):
         'gdal_translate', 
         '-of', 'MBTILES',
         '-co', 'QUALITY=95',
+        '-co', 'TILED=YES',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
     
     # Adicionar níveis de zoom
-    cmd_zoom = ['gdaladdo', '-r', 'average', output_mbtiles, '2', '4', '8', '16', '32']
+    cmd_zoom = ['gdaladdo', '-r', 'nearest', output_mbtiles, '2', '4', '8', '16', '32']
     subprocess.run(cmd_zoom, check=True)
     
     os.remove(output_tif)
