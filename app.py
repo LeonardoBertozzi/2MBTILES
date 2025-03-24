@@ -26,15 +26,18 @@ def pdf_to_mbtiles(input_pdf, output_mbtiles):
     cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', '-r', 'cubic', output_tif, output_tif]
     subprocess.run(cmd_srs, check=True)
     
-    # Converter para MBTILES com nível de zoom configurado e suavização
+    # Converter para MBTILES com qualidade ajustada
     cmd_mbtiles = [
         'gdal_translate', 
         '-of', 'MBTILES',
-        '-co', 'ZOOM_LEVEL=0-30',
         '-co', 'QUALITY=95',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
+    
+    # Adicionar níveis de zoom
+    cmd_zoom = ['gdaladdo', '-r', 'average', output_mbtiles, '2', '4', '8', '16', '32']
+    subprocess.run(cmd_zoom, check=True)
     
     os.remove(output_tif)
 
