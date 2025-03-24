@@ -14,19 +14,24 @@ os.environ['PATH'] += r';C:\OSGeo4W\bin'
 def pdf_to_mbtiles(input_pdf, output_mbtiles):
     output_tif = os.path.join(RESULT_FOLDER, 'output.tif')
     
-    # Converter PDF para TIFF com resolução adequada
-    cmd_tif = ['gdal_translate', '-of', 'GTiff', '-outsize', '1280', '800', input_pdf, output_tif]
+    # Converter PDF para TIFF com alta resolução e suavização
+    cmd_tif = [
+        'gdal_translate', '-of', 'GTiff', '-outsize', '2560', '1600',
+        '-co', 'TILED=YES', '-co', 'COMPRESS=LZW', '-co', 'PREDICTOR=2',
+        input_pdf, output_tif
+    ]
     subprocess.run(cmd_tif, check=True)
     
     # Adicionar sistema de referência espacial (SRS) se não estiver presente
-    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', output_tif, output_tif]
+    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', '-r', 'cubic', output_tif, output_tif]
     subprocess.run(cmd_srs, check=True)
     
-    # Converter para MBTILES com nível de zoom configurado
+    # Converter para MBTILES com nível de zoom configurado e suavização
     cmd_mbtiles = [
         'gdal_translate', 
         '-of', 'MBTILES',
         '-co', 'ZOOM_LEVEL=0-30',
+        '-co', 'QUALITY=95',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
