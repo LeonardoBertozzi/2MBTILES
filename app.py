@@ -14,25 +14,24 @@ os.environ['PATH'] += r';C:\OSGeo4W\bin'
 def pdf_to_mbtiles(input_pdf, output_mbtiles):
     output_tif = os.path.join(RESULT_FOLDER, 'output.tif')
     
-    # Primeiro, converte o PDF para TIFF
-    cmd_tif = ['gdal_translate', '-of', 'GTiff', input_pdf, output_tif]
+    # Converter PDF para TIFF com resolução adequada
+    cmd_tif = ['gdal_translate', '-of', 'GTiff', '-outsize', '1280', '800', input_pdf, output_tif]
     subprocess.run(cmd_tif, check=True)
     
-    # Adicionando um sistema de referência espacial (SRS) se não estiver presente
-    # Isso define o sistema de coordenadas como EPSG:4326 (lat/lon)
+    # Adicionar sistema de referência espacial (SRS) se não estiver presente
     cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', output_tif, output_tif]
     subprocess.run(cmd_srs, check=True)
     
-    # Ajustando a resolução de pixels para garantir uma boa cobertura no dispositivo
+    # Converter para MBTILES com nível de zoom configurado
     cmd_mbtiles = [
         'gdal_translate', 
         '-of', 'MBTILES',
+        '-co', 'ZOOM_LEVEL=0-30',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
     
     os.remove(output_tif)
-
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
