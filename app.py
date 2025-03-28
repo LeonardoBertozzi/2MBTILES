@@ -14,32 +14,28 @@ os.environ['PATH'] += r';C:\OSGeo4W\bin'
 def pdf_to_mbtiles(input_pdf, output_mbtiles):
     output_tif = os.path.join(RESULT_FOLDER, 'output.tif')
     
-    # Converter PDF para TIFF com alta resolução e suavização
-    cmd_tif = [
-        'gdal_translate', '-of', 'GTiff', '-outsize', '2560', '1600',
-        '-co', 'COMPRESS=LZW', '-co', 'PREDICTOR=2',
-        input_pdf, output_tif
-    ]
+    # Primeiro, converte o PDF para TIFF
+    cmd_tif = ['gdal_translate', '-of', 'GTiff', input_pdf, output_tif]
     subprocess.run(cmd_tif, check=True)
     
-    # Adicionar sistema de referência espacial (SRS) se não estiver presente
-    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', '-r', 'lanczos', output_tif, output_tif]
+    # Adicionando um sistema de referência espacial (SRS) se não estiver presente
+    # Isso define o sistema de coordenadas como EPSG:4326 (lat/lon)
+    cmd_srs = ['gdalwarp', '-s_srs', 'EPSG:4326', '-t_srs', 'EPSG:4326', output_tif, output_tif]
     subprocess.run(cmd_srs, check=True)
     
-    # Converter para MBTILES com qualidade ajustada
+    # Ajustando a resolução de pixels para garantir uma boa cobertura no dispositivo
     cmd_mbtiles = [
         'gdal_translate', 
         '-of', 'MBTILES',
-        '-co', 'QUALITY=95',
         output_tif, output_mbtiles
     ]
     subprocess.run(cmd_mbtiles, check=True)
-    
-    # Adicionar níveis de zoom para melhor visualização
+
     cmd_zoom = ['gdaladdo', '-r', 'lanczos', output_mbtiles, '2', '4', '8', '16', '32']
     subprocess.run(cmd_zoom, check=True)
     
     os.remove(output_tif)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
